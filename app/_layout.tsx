@@ -1,29 +1,81 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+// app/_layout.tsx
+// import { Slot, SplashScreen } from 'expo-router';
+// import { useSegments, useRouter } from 'expo-router';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import React, { useEffect, useState } from 'react';
+// import { auth } from '../firebaseConfig';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+// const RootLayout = () => {
+//   const segments = useSegments();
+//   const router = useRouter();
+//   const [isAuth, setIsAuth] = useState(false);
+//   const [isReady, setIsReady] = useState(false);
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (user) => {
+//       setIsAuth(!!user);
+//       setIsReady(true);
+//       SplashScreen.hideAsync();
+//     });
+//     return () => unsubscribe();
+//   }, []);
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
-}
+//   useEffect(() => {
+//     if (!isReady) return;
+//     const inAuthGroup = segments[0] === '(auth)';
+
+//     if (isAuth && inAuthGroup) {
+//       router.replace('/(tabs)/home');
+//     } else if (!isAuth && !inAuthGroup) {
+//       router.replace('/(auth)/signin');
+//     }
+//   }, [isAuth, isReady, segments]);
+
+//   // Make sure nothing is returned before or after this line
+//   return <Slot />;
+// };
+
+// export default RootLayout;
+// app/_layout.tsx
+import { Slot, SplashScreen } from 'expo-router';
+import { useSegments, useRouter } from 'expo-router';
+import { onAuthStateChanged } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import { auth } from '../firebaseConfig';
+
+SplashScreen.preventAutoHideAsync();
+
+const RootLayout = () => {
+  const segments = useSegments();
+  const router = useRouter();
+  const [isAuth, setIsAuth] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuth(!!user);
+      setIsReady(true);
+      SplashScreen.hideAsync();
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (isAuth && inAuthGroup) {
+      // User is authenticated, redirect them away from the auth pages
+      router.replace('/(tabs)/home');
+    } else if (!isAuth && !inAuthGroup) {
+      // User is not authenticated, redirect them to the signin page
+      router.replace('/');
+    }
+  }, [isAuth, isReady, segments]);
+
+  return <Slot />;
+};
+
+export default RootLayout;

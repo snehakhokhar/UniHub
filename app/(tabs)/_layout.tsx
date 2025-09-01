@@ -1,30 +1,37 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
+import { StyleSheet } from 'react-native';
 
-export default function Layout() {
+export default function TabLayout() {
   return (
-    <Tabs initialRouteName="index">
-      {/* Home (Main Books List + Search) */}
+    <Tabs screenOptions={{ headerShown: false, tabBarStyle: styles.tabBar }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          title: 'Home',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
         }}
       />
-
-      {/* Add Book */}
       <Tabs.Screen
-        name="add-book"
+        name="addbook"
         options={{
-          title: "Add Book",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
-          ),
+          title: 'Add Book',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="plus-circle" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="user" color={color} />,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    paddingVertical: 10,
+  },
+});
