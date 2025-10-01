@@ -1,8 +1,8 @@
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebaseConfig'; // Adjust the path if needed
 import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { auth } from '../../firebaseConfig'; // Adjust the path if needed
 
 export default function Signup() {
   const [email, setEmail] = useState('');
