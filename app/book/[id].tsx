@@ -213,47 +213,46 @@ type Book = {
     image?: string;
     contact: string;
     Student_Name?: string; 
+    description: string;
 };
 
 export default function BookDetailScreen() {
-    const { id } = useLocalSearchParams();
-    const [book, setBook] = useState<Book | null>(null);
-    const [loading, setLoading] = useState(true);
+const { id } = useLocalSearchParams();
+const [book, setBook] = useState<Book | null>(null);
+const [loading, setLoading] = useState(true);
+    
+useEffect(() => {
+if (id) {
+const fetchBook = async () => {
+ try {
+const docRef = doc(db, "books", id as string);
+const docSnap = await getDoc(docRef);
 
-    useEffect(() => {
-        if (id) {
-            const fetchBook = async () => {
-                try {
-                    const docRef = doc(db, "books", id as string);
-                    const docSnap = await getDoc(docRef);
-
-                    if (docSnap.exists()) {
-                        setBook(docSnap.data() as Book);
-                    } else {
-                        Alert.alert("Error", "Book not found.");
-                    }
-                } catch (e) {
-                    console.error("Error fetching document: ", e);
-                    Alert.alert("Error", "Failed to load book details.");
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchBook();
-        }
+if (docSnap.exists()) {
+ setBook(docSnap.data() as Book);
+ } else {
+    Alert.alert("Error", "Book not found.");
+  }
+ } catch (e) {
+    console.error("Error fetching document: ", e);
+    Alert.alert("Error", "Failed to load book details.");
+  } finally {
+    setLoading(false);
+  }};
+   fetchBook(); }
     }, [id]);
 
     const handleCall = (phone: string) => {
         Linking.openURL(`tel:${phone}`);
     };
 
-    if (loading) {
-        return (
-            <View style={[styles.container, styles.loadingContainer]}>
-                <ActivityIndicator size="large" color="#007BFF" />
-            </View>
-        );
-    }
+if (loading) {
+   return (
+     <View style={[styles.container, styles.loadingContainer]}>
+     <ActivityIndicator size="large" color="#007BFF" />
+    </View>
+);
+}
 
     if (!book) {
         return (
@@ -263,53 +262,50 @@ export default function BookDetailScreen() {
         );
     }
 
-    return (
-        <ScrollView style={styles.container}>
-            <View style={styles.imageContainer}>
-                <Image
-                    source={{ uri: book.image && book.image.trim() !== "" ? book.image : "https://via.placeholder.com/400x300.png" }}
-                    style={styles.bookImage}
-                />
-            </View>
+return (
+<ScrollView style={styles.container}>
+ <View style={styles.imageContainer}>
+ <Image
+source={{ uri: book.image && book.image.trim() !== "" ? book.image : "https://via.placeholder.com/400x300.png" }}
+style={styles.bookImage}
+/>
+</View>
 
-            <View style={styles.detailsBox}>
+<View style={styles.detailsBox}>
+<View style={styles.row}>
+<Text style={styles.title}>{book.Title}</Text>
+<Text style={[styles.price, 
+book.price === 'Free' && styles.priceFreeDetail
+]}
+>
+ {book.price === 'Free' ? 'FREE' : `₹${book.price}`}
+</Text>
+</View>
 
-                {/* Title and Price (Placed in a row using flex) */}
-                <View style={styles.row}>
-                    <Text style={styles.title}>{book.Title}</Text>
-                    <Text 
-                        style={[
-                            styles.price, 
-                            book.price === 'Free' && styles.priceFreeDetail
-                        ]}
-                    >
-                        {book.price === 'Free' ? 'FREE' : `₹${book.price}`}
-                    </Text>
-                </View>
-
-                <View style={styles.separator} />
-
-                {/* Author Group */}
-                <View style={styles.infoGroup}>
-                    <Text style={styles.label}>Author</Text>
-                    <Text style={styles.value}>{book.author}</Text>
-                </View>
+<View style={styles.separator} />
+<View style={styles.infoGroup}>
+<Text style={styles.label}>Author</Text>
+<Text style={styles.value}>{book.author}</Text>
+</View>
                 
-                {/* Branch / Semester Group */}
-                <View style={styles.infoGroup}>
-                    <Text style={styles.label}>Branch / Semester</Text>
-                    <Text style={styles.value}>
-                        {book.branch} / Semester {book.semester}
-                    </Text>
-                </View>
+        
+<View style={styles.infoGroup}>
+    <Text style={styles.label}>Branch / Semester</Text>
+    <Text style={styles.value}>
+        {book.branch} / Semester {book.semester}
+    </Text>
+</View>
 
-                {/* Seller/Student Name Group */}
-                <View style={styles.infoGroup}>
-                    <Text style={styles.label}>Seller</Text>
-                    <Text style={styles.value}>{book.Student_Name || 'Not specified'}</Text>
-                </View>
+<View style={styles.descriptionContainer}>
+    <Text style={styles.descriptionLabel}>Book Condition / Notes</Text>
+    <Text style={styles.descriptionText}>{book.description}</Text>
+</View>
+<View style={styles.infoGroup}>
+    <Text style={styles.label}>Seller</Text>
+    <Text style={styles.value}>{book.Student_Name || 'Not specified'}</Text>
+</View>
 
-            </View>
+</View>
 
             <TouchableOpacity 
                 style={styles.contactButton} 
@@ -406,5 +402,32 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    descriptionContainer: {
+        // Adds space above and below the description block
+        paddingHorizontal: 20, 
+        paddingVertical: 15,
+        backgroundColor: '#f9f9f9', // Light gray background to separate it
+        borderRadius: 8,
+        marginTop: 15,
+        borderLeftWidth: 3,
+        borderColor: '#007bff', // A subtle blue line on the left
+    },
+    
+    descriptionLabel: {
+        // Style for the heading/label (Book Condition / Notes)
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#666', // Darker gray color
+        marginBottom: 5,
+        textTransform: 'uppercase',
+    },
+
+    descriptionText: {
+        // Style for the actual description content
+        fontSize: 16,
+        lineHeight: 22,
+        color: '#333', // Standard text color
+        textAlign: 'justify', // Makes the text fill the width nicely
     },
 });

@@ -229,8 +229,6 @@ export default function Signin() { // Exported correctly as a function component
       <TouchableOpacity style={styles.button} onPress={handleSignin}>
         <Text style={styles.buttonText}>Sign In</Text>
       </TouchableOpacity>
-      
-      {/* Forgot Password Link */}
       <TouchableOpacity style={styles.forgotPasswordButton} onPress={handleForgotPassword}>
         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
       </TouchableOpacity>

@@ -1,5 +1,6 @@
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection } from "firebase/firestore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebaseConfig"; // Adjust the path if needed
 
@@ -12,22 +13,35 @@ export default function AddBook() {
   const [contact, setContact] = useState("");
   const [price, setPrice] = useState("");
   const [studentName, setStudentName] = useState(""); // State for Student_Name
-   const [isFree, setIsFree] = useState(false);
-const [isSubmitting, setIsSubmitting] = useState(false); 
-
+  const [isFree, setIsFree] = useState(false);
+ const [isSubmitting, setIsSubmitting] = useState(false); 
+ const [description, setDescription] = useState('');
+  const auth = getAuth();
+ useEffect(() => { const unsubscribe = onAuthStateChanged(auth, (user) => {
+ if (user) {
+ // Use the user's display name or email if the name isn't set
+setStudentName(user.displayName || user.email || "Unknown Seller");
+ } else {
+ // Handle case where user is somehow on this page without being logged in
+ setStudentName(""); 
+}
+});
+ return () => unsubscribe();
+ }, []);
   const handleSubmit = async () => {
     // Basic validation to ensure fields are not empty
     const finalPrice = isFree ? "Free" : price.replace(/[^0-9]/g, '');
-    if(!title || !author || !branch || !semester || !contact || !studentName) {
-      Alert.alert('Error', 'Please fill in all required fields.');
+    if(!title || !author || !branch || !semester || !contact) {
+ Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
-    if (!isFree && finalPrice.length === 0) {
-      Alert.alert('Error', 'Please enter a price or mark as Free.');
-      return;
-    }
+if (!isFree && finalPrice.length === 0) {
+ Alert.alert('Error', 'Please enter a price or mark as Free.');
+ return;
+ }
 setIsSubmitting(true);
-
+const user = auth.currentUser;
+const sellerUid = user ? user.uid : "anonymous";
     try {
        const cleanedPrice = price.replace(/[^0-9]/g, '');
       // Use addDoc to add a new document to the "books" collection
@@ -39,7 +53,9 @@ setIsSubmitting(true);
         image: image,
         contact: contact,
         price: finalPrice, 
-        Student_Name: studentName, // Correct field name
+        description: description, 
+        Student_Name: studentName,
+        sellerUid: sellerUid,
       });
       
       console.log("Document written with ID: ", docRef.id);
@@ -54,16 +70,15 @@ setIsSubmitting(true);
       setContact("");
       setPrice("");
       setIsFree(false);
-      setStudentName("");
 
     } catch (e) {
       console.error("Error adding document: ", e);
       Alert.alert("Error", "Failed to add book. Please try again.");
     }
     finally {
-      // 💡 Stop loading
-      setIsSubmitting(false); 
-    }
+ setIsSubmitting(false); 
+ }
+
   };
 
   return (
@@ -101,44 +116,52 @@ setIsSubmitting(true);
         value={contact}
         onChangeText={setContact}
         keyboardType="phone-pad"
-      />
-      <View style={styles.priceToggleContainer}>
-        <Text style={styles.priceToggleLabel}>Price Status:</Text>
-        <TouchableOpacity
-          style={[styles.priceOption, isFree ? styles.priceOptionActive : styles.priceOptionInactive]}
-          onPress={() => { setIsFree(true); setPrice(''); }} // Clear price when setting to Free
-        >
-          <Text style={isFree ? styles.priceTextActive : styles.priceTextInactive}>FREE</Text>
-        </TouchableOpacity>
+  />
+<View style={styles.priceToggleContainer}>
+<Text style={styles.priceToggleLabel}>Price Status:</Text>
+<TouchableOpacity
+style={[styles.priceOption, isFree ? styles.priceOptionActive : styles.priceOptionInactive]}
+ onPress={() => { setIsFree(true); setPrice(''); }} // Clear price when setting to Free
+>
+<Text style={isFree ? styles.priceTextActive : styles.priceTextInactive}>FREE</Text>
+</TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.priceOption, !isFree ? styles.priceOptionActive : styles.priceOptionInactive]}
-          onPress={() => setIsFree(false)}
-        >
-          <Text style={!isFree ? styles.priceTextActive : styles.priceTextInactive}>PRICED</Text>
-        </TouchableOpacity>
-      </View>
+ <TouchableOpacity
+style={[styles.priceOption, !isFree ? styles.priceOptionActive : styles.priceOptionInactive]}
+ onPress={() => setIsFree(false)}
+ >
+<Text style={!isFree ? styles.priceTextActive : styles.priceTextInactive}>PRICED</Text>
+</TouchableOpacity>
+</View>
  {!isFree && (
-        <TextInput
-          style={styles.input}
-          placeholder="Price (e.g. 250)"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-      )}
-      <TextInput
-        style={styles.input}
-        placeholder="Student Name"
-        value={studentName}
-        onChangeText={setStudentName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Image URL"
-        value={image}
-        onChangeText={setImage}
-      />
+ <TextInput
+style={styles.input}
+ placeholder="Price (e.g. 250)"
+ value={price}
+ onChangeText={setPrice}
+keyboardType="numeric"
+ />
+)}
+<Text style={styles.label}>Description</Text>
+<TextInput
+    style={[styles.input, styles.textArea]} // You'll need to define a styles.textArea
+    placeholder="e.g., Condition is fair, has highlight marks on first 5 pages."
+    value={description}
+    onChangeText={setDescription}
+    multiline={true} // Allows multiple lines
+    numberOfLines={4} // Suggests a minimum height
+/>
+<View style={styles.infoBox}>
+    <Text style={styles.infoLabel}>Seller Name (Auto-filled)</Text>
+    <Text style={styles.infoValue}>{studentName || 'Loading...'}</Text>
+</View>
+
+  <TextInput
+   style={styles.input}
+  placeholder="Image URL"
+  value={image}
+  onChangeText={setImage}
+/>
 
       <TouchableOpacity style={[styles.button , isSubmitting && styles.buttonDisabled]} onPress={handleSubmit} disabled={isSubmitting}>
         <Text style={styles.buttonText}>Add Book</Text>
@@ -223,5 +246,39 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '500',
   },
+label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        marginTop: 15,
+        marginBottom: 5,
+    },   
+   textArea: {
+        minHeight: 120, // Ensures enough vertical space for multiple lines
+        height: 'auto', // Allows the height to grow if needed
+        textAlignVertical: 'top', // Important: aligns text to the top for multiline
+    },
+infoBox: {
+    width: '100%',
+    padding: 12,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 10,
+    backgroundColor: '#e6f7ff',
+},
+
+infoLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0056b3',
+    marginBottom: 4,
+},
+
+infoValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+},
 });
 

@@ -14,7 +14,7 @@ type Book = {
   price: string;
   image?: string;
   contact: string;
-  Student_Name?: string; 
+  Student_Name: string; 
 };
 
 export default function BookList() {
@@ -23,24 +23,24 @@ export default function BookList() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "books"));
-        const booksArray = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            Title: data.Title ?? "", 
-            author: data.author ?? "",
-            branch: data.branch ?? "",
-            semester: data.semester ?? "",
-            price: data.price ?? "",
-            image: data.image ?? "",
-            contact: data.contact ?? "",
-            Student_Name: data.Student_Name ?? "", 
-          } as Book;
-        });
+ useEffect(() => {
+ const fetchBooks = async () => {
+ try {
+ const querySnapshot = await getDocs(collection(db, "books"));
+ const booksArray = querySnapshot.docs.map(doc => {
+ const data = doc.data();
+ return {
+ id: doc.id,
+ Title: data.Title ?? "", 
+ author: data.author ?? "",
+ branch: data.branch ?? "",
+ semester: data.semester ?? "",
+ price: data.price ?? "",
+  image: data.image ?? "",
+ contact: data.contact ?? "",
+ Student_Name: data.Student_Name ?? "", 
+} as Book;
+});
         setBooks(booksArray);
       } catch (e) {
         console.error("Error fetching documents: ", e);
@@ -51,84 +51,74 @@ export default function BookList() {
     fetchBooks();
   }, []);
 
-  const filteredBooks = books.filter(book =>
-    (book.Title?.toLowerCase() || '').includes(search.toLowerCase()) || 
-    (book.semester?.toString() || '').toLowerCase().includes(search.toLowerCase()) ||
-    (book.branch?.toLowerCase() || '').includes(search.toLowerCase())
-  );
+ const filteredBooks = books.filter(book =>
+ (book.Title?.toLowerCase() || '').includes(search.toLowerCase()) || 
+ (book.semester?.toString() || '').toLowerCase().includes(search.toLowerCase()) ||
+ (book.branch?.toLowerCase() || '').includes(search.toLowerCase())
+ );
 
-  const handleCall = (phone: string) => {
-    Linking.openURL(`tel:${phone}`);
-  };
+ const handleCall = (phone: string) => {
+ Linking.openURL(`tel:${phone}`);
+ };
 
-  // --- Loading and Empty State ---
-  if (loading) {
-    return (
-      <View style={styles.safeContainer}>
-        <Text>Loading books...</Text>
-      </View>
-    );
-  }
-  
-  if (filteredBooks.length === 0 && !loading) {
-      return (
-          <View style={styles.safeContainer}>
-              <Text>No books found. Try a different search or add a new book to the database.</Text>
-          </View>
-      );
-  }
-  // ---------------------------------
+if (loading) {
+ return (
+ <View style={styles.safeContainer}>
+ <Text>Loading books...</Text>
+</View>);
+} 
+ if (filteredBooks.length === 0 && !loading) {
+ return (
+ <View style={styles.safeContainer}>
+ <Text>No books found. Try a different search or add a new book to the database.</Text>
+ </View>
+);
+}
+ return (
+ <SafeAreaView style={styles.safeContainer}>
+<View style={styles.innerContainer}>
+ <TextInput
+style={styles.input}
+placeholder="🔍 Search by title, semester or branch"
+ onChangeText={setSearch}
+ />
 
-  return (
-    <SafeAreaView style={styles.safeContainer}>
-      <View style={styles.innerContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="🔍 Search by title, semester or branch"
-          value={search}
-          onChangeText={setSearch}
-        />
+<FlatList
+data={filteredBooks}
+ keyExtractor={(item) => item.id}
+ renderItem={({ item }) => (
+ <TouchableOpacity 
+style={styles.row}
+ onPress={() => router.push(`/book/${item.id}`)} 
+> 
+<Image
+source={{ uri: item.image && item.image.trim() !== "" ? item.image : "https://via.placeholder.com/100x100.png" }}
+style={styles.image}
+/>
 
-        <FlatList
-          data={filteredBooks}
-          keyExtractor={(item) => item.id}
-          
-          renderItem={({ item }) => (
-            <TouchableOpacity 
-                style={styles.row}
-                onPress={() => router.push(`/book/${item.id}`)} 
-            >
-              {/* Book Image */}
-              <Image
-                source={{ uri: item.image && item.image.trim() !== "" ? item.image : "https://via.placeholder.com/100x100.png" }}
-                style={styles.image}
-              />
-
-              {/* Text details - Structure is now perfect */}
-              <View style={styles.details}>
-                <Text style={styles.title} numberOfLines={1}>{item.Title}</Text> 
-                <Text style={styles.subtitle}>
-                  {item.author} • {item.branch} • Sem {item.semester}
-                </Text>
-                <View style={styles.bottomRow}>
-                  <Text style={[styles.price, item.price === 'Free' && styles.priceFree]}>
-                        {item.price === 'Free' ? 'FREE' : `₹${item.price}`}
-                    </Text>
-                  <TouchableOpacity 
-                        onPress={(e) => {
-                            e.stopPropagation(); 
-                            handleCall(item.contact);
-                        }}
-                    >
-                    <Text style={styles.callText}>📞 Call</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
-    </SafeAreaView>
+<View style={styles.details}>
+<Text style={styles.title} numberOfLines={1}>{item.Title}</Text> 
+<Text style={styles.subtitle}>
+ {item.author} • {item.branch} • Sem {item.semester}
+</Text>
+<View style={styles.bottomRow}>
+<Text style={[styles.price, item.price === 'Free' && styles.priceFree]}>
+ {item.price === 'Free' ? 'FREE' : `₹${item.price}`}
+</Text>
+<TouchableOpacity 
+ onPress={(e) => {
+ e.stopPropagation(); 
+ handleCall(item.contact);
+ }}>
+<Text style={styles.callText}>📞 Call</Text>
+</TouchableOpacity>
+</View>
+</View>
+</TouchableOpacity>
+)}
+/>
+</View>
+</SafeAreaView>
   );
 }
 
@@ -136,10 +126,12 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingTop:10,
   },
   innerContainer: {
     flex: 1,
-    padding: 10,
+    padding: 20,
+paddingTop:30,
   },
   input: {
     borderWidth: 1,

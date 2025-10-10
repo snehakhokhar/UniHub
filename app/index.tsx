@@ -7,16 +7,14 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Project Logo / Image */}
       <Image
-        source={require("./Gemini_Generated_Image_pacyk0pacyk0pacy.png")} // ✅ yaha apna logo dalna
+        source={require("./Gemini_Generated_Image_pacyk0pacyk0pacy.png")} r
         style={styles.logo}
       />
 
-      {/* Project Title */}
+      
       <Text style={styles.title}>UniHub</Text>
 
-      {/* Buttons */}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.push("/signin")}
