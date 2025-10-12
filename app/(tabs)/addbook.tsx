@@ -3,6 +3,30 @@ import { addDoc, collection } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebaseConfig"; // Adjust the path if needed
+import { useRouter } from 'expo-router'; 
+interface CustomAlertProps {
+  visible: boolean;
+  message: string;
+  type: 'Error' | 'Success' | string;
+  onClose: () => void;
+}
+
+// 1B. Custom Alert Component Definition
+const CustomAlertBanner: React.FC<CustomAlertProps> = ({ visible, message, type, onClose }) => {
+  if (!visible) return null;
+
+  const backgroundColor = type === 'Error' ? '#dc3545' : '#28a745';
+  const icon = type === 'Error' ? '❌' : '✅';
+
+  return (
+    <View style={[customAlertStyles.banner, { backgroundColor }]}>
+      <Text style={customAlertStyles.text}>{icon} {message}</Text>
+      <TouchableOpacity onPress={onClose} style={customAlertStyles.closeButton}>
+        <Text style={customAlertStyles.closeText}>✕</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function AddBook() {
   const [title, setTitle] = useState("");
@@ -17,6 +41,17 @@ export default function AddBook() {
  const [isSubmitting, setIsSubmitting] = useState(false); 
  const [description, setDescription] = useState('');
   const auth = getAuth();
+  const router = useRouter();
+  const [alert, setAlert] = useState({ visible: false, message: '', type: '' });
+  const hideAlert = () => {
+    setAlert({ visible: false, message: '', type: '' });
+  };
+
+  const showAlert = (type:'Error' | 'Success', message:string) => {
+    setAlert({ visible: true, message: message, type: type });
+    // Auto-hide the alert after 4 seconds
+    setTimeout(hideAlert, 2000);
+  };
  useEffect(() => { const unsubscribe = onAuthStateChanged(auth, (user) => {
  if (user) {
  // Use the user's display name or email if the name isn't set
@@ -31,12 +66,14 @@ setStudentName(user.displayName || user.email || "Unknown Seller");
   const handleSubmit = async () => {
     // Basic validation to ensure fields are not empty
     const finalPrice = isFree ? "Free" : price.replace(/[^0-9]/g, '');
-    if(!title || !author || !branch || !semester || !contact) {
+    if(!title || !author || !branch || !semester || !contact || !description) {
  Alert.alert('Error', 'Please fill in all required fields.');
+ showAlert('Error', 'Please fill in all required fields.');
       return;
     }
 if (!isFree && finalPrice.length === 0) {
  Alert.alert('Error', 'Please enter a price or mark as Free.');
+ showAlert('Error', 'Please enter a price or mark as Free.'); 
  return;
  }
 setIsSubmitting(true);
@@ -59,7 +96,8 @@ const sellerUid = user ? user.uid : "anonymous";
       });
       
       console.log("Document written with ID: ", docRef.id);
-      Alert.alert("Success", "Book added successfully!");
+      showAlert("Success", "Book added successfully!");
+
 
       // Clear the form after submission
       setTitle("");
@@ -70,10 +108,11 @@ const sellerUid = user ? user.uid : "anonymous";
       setContact("");
       setPrice("");
       setIsFree(false);
-
+      router.replace('./home');
     } catch (e) {
       console.error("Error adding document: ", e);
       Alert.alert("Error", "Failed to add book. Please try again.");
+      showAlert('Error', 'Failed to add book. Please try again.');
     }
     finally {
  setIsSubmitting(false); 
@@ -82,6 +121,14 @@ const sellerUid = user ? user.uid : "anonymous";
   };
 
   return (
+    <>
+    <CustomAlertBanner
+        visible={alert.visible}
+        message={alert.message}
+        type={alert.type}
+        onClose={hideAlert}
+      />
+      
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Add New Book</Text>
 
@@ -167,9 +214,40 @@ keyboardType="numeric"
         <Text style={styles.buttonText}>Add Book</Text>
       </TouchableOpacity>
     </ScrollView>
+    </>
   );
 }
-
+const customAlertStyles = StyleSheet.create({
+  banner: {
+    padding: 15,
+    borderRadius: 8,
+    marginHorizontal: 10,
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    // Position absolute is key for overlaying ScrollView
+    position: 'absolute',
+    top: 0, 
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  text: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  closeButton: {
+    padding: 5,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -280,5 +358,6 @@ infoValue: {
     fontWeight: 'bold',
     color: '#333',
 },
+
 });
 

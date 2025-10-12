@@ -6,15 +6,15 @@ import { db } from "../../firebaseConfig";
 
 // Define the correct Book type
 type Book = {
-  id: string;
-  Title: string; 
-  author: string;
-  branch: string;
-  semester: string | number;
-  price: string;
-  image?: string;
-  contact: string;
-  Student_Name: string; 
+id: string;
+Title: string; 
+author: string;
+branch: string;
+semester: string | number;
+price: string;
+image?: string;
+contact: string;
+Student_Name: string; 
 };
 
 export default function BookList() {
@@ -36,7 +36,7 @@ export default function BookList() {
  branch: data.branch ?? "",
  semester: data.semester ?? "",
  price: data.price ?? "",
-  image: data.image ?? "",
+image: data.image ?? "",
  contact: data.contact ?? "",
  Student_Name: data.Student_Name ?? "", 
 } as Book;
@@ -92,7 +92,7 @@ style={styles.row}
  onPress={() => router.push(`/book/${item.id}`)} 
 > 
 <Image
-source={{ uri: item.image && item.image.trim() !== "" ? item.image : "https://via.placeholder.com/100x100.png" }}
+source={{ uri: item.image && item.image.trim() !== "" ? item.image : "https://th.bing.com/th/id/R.29b132aefa114eaa5d24ef8862d2f97d?rik=TISW01nJElDcsQ&riu=http%3a%2f%2fclipart-library.com%2fimages%2f8cEb8geni.jpg&ehk=rWHIunB4f3%2bXVNQLkWDex2EeFZJugkVcRyGKV4mzeBY%3d&risl=&pid=ImgRaw&r=0" }}
 style={styles.image}
 />
 

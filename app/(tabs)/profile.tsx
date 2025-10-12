@@ -28,13 +28,53 @@ const Colors = {
     textMuted: '#6c757d',    // Secondary text
     border: '#e9ecef',       // Light border
 };
+interface CustomAlertProps {
+    visible: boolean;
+    message: string;
+    type: 'Error' | 'Success' | 'Signed Out';
+    onClose: () => void;
+}
+const CustomAlertBanner: React.FC<CustomAlertProps> = ({ visible, message, type, onClose }) => {
+    if (!visible) return null;
+
+    let backgroundColor;
+    let icon;
+
+    if (type === 'Error') {
+        backgroundColor = Colors.danger;
+        icon = '❌';
+    } else if (type === 'Success') {
+        backgroundColor = Colors.success;
+        icon = '✅';
+    } else { // Handle 'Signed Out' or default
+        backgroundColor = Colors.primary;
+        icon = '👋';
+    }
+return (
+        <View style={[customAlertStyles.banner, { backgroundColor }]}>
+            <Text style={customAlertStyles.text}>{icon} {message}</Text>
+            <TouchableOpacity onPress={onClose} style={customAlertStyles.closeButton}>
+                <Text style={customAlertStyles.closeText}>✕</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 
 export default function ProfileScreen() {
     const router = useRouter();
     const [userBooks, setUserBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(true);
+    const [alert, setAlert] = useState<CustomAlertProps>({ visible: false, message: '', type: 'Success', onClose: () => setAlert(prev => ({ ...prev, visible: false })) });
     const user = auth.currentUser;
+const hideAlert = () => {
+        setAlert(prev => ({ ...prev, visible: false }));
+    };
 
+    const showAlert = (type: 'Error' | 'Success' | 'Signed Out', message: string) => {
+        setAlert({ visible: true, message: message, type: type, onClose: hideAlert });
+        // Auto-hide the alert after 3 seconds
+        setTimeout(hideAlert, 3000);
+    };
     // --- 1. FETCH USER'S LISTINGS ---
     const fetchUserBooks = async () => {
         if (!user) {
@@ -55,6 +95,7 @@ export default function ProfileScreen() {
         } catch (e) {
             console.error("Error fetching user documents: ", e);
             Alert.alert("Error", "Failed to load your listings.");
+             showAlert("Error", "Failed to load your listings.");
         } finally {
             setLoading(false);
         }
@@ -71,9 +112,11 @@ export default function ProfileScreen() {
             await deleteDoc(doc(db, "books", bookId));
             setUserBooks(prev => prev.filter(book => book.id !== bookId));
             Alert.alert("Success", "Book deleted successfully!");
+            showAlert("Success", "Book deleted successfully!"); 
         } catch (e) {
             console.error("Error deleting book: ", e);
             Alert.alert("Error", "Failed to delete book. Try again.");
+            showAlert("Error", "Failed to delete book. Try again.");
         }
     };
 
@@ -81,11 +124,15 @@ export default function ProfileScreen() {
     const handleSignOut = async () => {
         try {
             await signOut(auth);
-            Alert.alert('Signed Out', 'You have been successfully signed out.');
+            showAlert('Signed Out', 'You have been successfully signed out.');
+           setTimeout(() => {
             router.replace('/'); 
+        }, 600);
         } catch (error) {
             console.error('Sign out error:', error);
             Alert.alert('Error', 'Failed to sign out. Please try again.');
+            showAlert('Error', 'Failed to sign out. Please try again.');
+            
         }
     };
 
@@ -108,7 +155,7 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
             >
                 <Image
-                    source={{ uri: item.imageUrl || item.image || "https://via.placeholder.com/80x80.png" }}
+                    source={{ uri: item.imageUrl || item.image || "https://th.bing.com/th/id/R.29b132aefa114eaa5d24ef8862d2f97d?rik=TISW01nJElDcsQ&riu=http%3a%2f%2fclipart-library.com%2fimages%2f8cEb8geni.jpg&ehk=rWHIunB4f3%2bXVNQLkWDex2EeFZJugkVcRyGKV4mzeBY%3d&risl=&pid=ImgRaw&r=0" }}
                     style={styles.bookImage}
                 />
                 <View style={styles.textDetails}>
@@ -150,6 +197,14 @@ export default function ProfileScreen() {
     );
 
     return (
+        <>
+           
+            <CustomAlertBanner
+                visible={alert.visible}
+                message={alert.message}
+                type={alert.type}
+                onClose={alert.onClose}
+            />
         <View style={styles.container}>
             <View style={styles.headerBox}>
                 <Text style={styles.header}>{user?.displayName || 'User'}</Text>
@@ -176,10 +231,42 @@ export default function ProfileScreen() {
                 <Text style={styles.signOutButtonText}>Sign Out</Text>
             </TouchableOpacity>
         </View>
+        </>
     );
 }
 
 // --- STYLESHEET ---
+const customAlertStyles = StyleSheet.create({
+    banner: {
+        padding: 15,
+        borderRadius: 8,
+        marginHorizontal: 10,
+        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'absolute',
+        top: 0, 
+        left: 0,
+        right: 0,
+        zIndex: 100, // Ensure it is above everything
+    },
+    text: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        flexShrink: 1,
+    },
+    closeButton: {
+        padding: 5,
+    },
+    closeText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+});
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

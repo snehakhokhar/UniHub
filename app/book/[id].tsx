@@ -266,7 +266,7 @@ return (
 <ScrollView style={styles.container}>
  <View style={styles.imageContainer}>
  <Image
-source={{ uri: book.image && book.image.trim() !== "" ? book.image : "https://via.placeholder.com/400x300.png" }}
+source={{ uri: book.image && book.image.trim() !== "" ? book.image : "https://th.bing.com/th/id/R.29b132aefa114eaa5d24ef8862d2f97d?rik=TISW01nJElDcsQ&riu=http%3a%2f%2fclipart-library.com%2fimages%2f8cEb8geni.jpg&ehk=rWHIunB4f3%2bXVNQLkWDex2EeFZJugkVcRyGKV4mzeBY%3d&risl=&pid=ImgRaw&r=0" }}
 style={styles.bookImage}
 />
 </View>
