@@ -17,47 +17,7 @@ import { db } from '../../firebaseConfig';
 
 // --- COLOR PALETTE ---
 const Colors = {
-<<<<<<< HEAD
-    primary: '#3c7bbeff',      // Modern Blue for primary text/headers
-    background: '#f8f9fa',   // Light gray/off-white background
-    card: '#ffffff',         // Pure white for cards
-    success: '#428452ff',      // Green for price/success
-    warning: '#e1b01fe4',      // Orange/Yellow for Edit
-    danger: '#e51e32e1',       // Red for Delete/Sign Out
-    textDark: '#333333',     // Main text
-    textMuted: '#6c757d',    // Secondary text
-    border: '#e9ecef',       // Light border
-};
-interface CustomAlertProps {
-    visible: boolean;
-    message: string;
-    type: 'Error' | 'Success' | 'Signed Out';
-    onClose: () => void;
-}
-const CustomAlertBanner: React.FC<CustomAlertProps> = ({ visible, message, type, onClose }) => {
-    if (!visible) return null;
 
-    let backgroundColor;
-    let icon;
-
-    if (type === 'Error') {
-        backgroundColor = Colors.danger;
-        icon = '❌';
-    } else if (type === 'Success') {
-        backgroundColor = Colors.success;
-        icon = '✅';
-    } else { // Handle 'Signed Out' or default
-        backgroundColor = Colors.primary;
-    }
-return (
-        <View style={[customAlertStyles.banner, { backgroundColor }]}>
-            <Text style={customAlertStyles.text}>{icon} {message}</Text>
-            <TouchableOpacity onPress={onClose} style={customAlertStyles.closeButton}>
-                <Text style={customAlertStyles.closeText}>✕</Text>
-            </TouchableOpacity>
-        </View>
-    );
-=======
   primary: '#3c7bbeff',
   background: '#f8f9fa',
   card: '#ffffff',
@@ -67,7 +27,7 @@ return (
   textDark: '#2c3e50',
   textMuted: '#7f8c8d',
   border: '#e0e0e0',
->>>>>>> 4fc3b931db0d8f5c0b067a064452c5faa0908339
+
 };
 
 // --- TYPE ---
