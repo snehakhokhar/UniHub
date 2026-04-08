@@ -1,23 +1,23 @@
+// --- PROFILE SCREEN (Stylish UI) ---
 import { useRouter } from 'expo-router';
 import { getAuth, signOut } from 'firebase/auth';
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { db } from '../../firebaseConfig'; // Ensure this path is correct
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { db } from '../../firebaseConfig';
 
-// Define the Book type (must match Firestore fields)
-type Book = {
-    id: string;
-    Title: string;
-    price: string;
-    image?: string;
-    imageUrl?: string;
-};
-
-const auth = getAuth(); // Get the Firebase Auth instance
-
-// --- COLOR PALETTE DEFINITION ---
+// --- COLOR PALETTE ---
 const Colors = {
+<<<<<<< HEAD
     primary: '#3c7bbeff',      // Modern Blue for primary text/headers
     background: '#f8f9fa',   // Light gray/off-white background
     card: '#ffffff',         // Pure white for cards
@@ -57,216 +57,240 @@ return (
             </TouchableOpacity>
         </View>
     );
+=======
+  primary: '#3c7bbeff',
+  background: '#f8f9fa',
+  card: '#ffffff',
+  success: '#42b883',
+  warning: '#f5b942',
+  danger: '#e74c3c',
+  textDark: '#2c3e50',
+  textMuted: '#7f8c8d',
+  border: '#e0e0e0',
+>>>>>>> 4fc3b931db0d8f5c0b067a064452c5faa0908339
 };
 
+// --- TYPE ---
+type Book = {
+  id: string;
+  Title: string;
+  price: string;
+  image?: string;
+  imageUrl?: string;
+};
+
+const auth = getAuth();
+
+// --- ALERT COMPONENT ---
+const CustomAlertBanner = ({ visible, message, type, onClose }: any) => {
+  if (!visible) return null;
+  let backgroundColor;
+  let icon;
+  if (type === 'Error') {
+    backgroundColor = Colors.danger;
+    icon = '❌';
+  } else if (type === 'Success') {
+    backgroundColor = Colors.success;
+    icon = '✅';
+  } else {
+    backgroundColor = Colors.primary;
+    icon = '👋';
+  }
+  return (
+    <View style={[alertStyles.banner, { backgroundColor }]}>
+      <Text style={alertStyles.text}>
+        {icon} {message}
+      </Text>
+      <TouchableOpacity onPress={onClose}>
+        <Text style={alertStyles.closeText}>✕</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// --- MAIN COMPONENT ---
 export default function ProfileScreen() {
-    const router = useRouter();
-    const [userBooks, setUserBooks] = useState<Book[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [alert, setAlert] = useState<CustomAlertProps>({ visible: false, message: '', type: 'Success', onClose: () => setAlert(prev => ({ ...prev, visible: false })) });
-    const user = auth.currentUser;
-const hideAlert = () => {
-        setAlert(prev => ({ ...prev, visible: false }));
-    };
+  const router = useRouter();
+  const [userBooks, setUserBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({
+    visible: false,
+    message: '',
+    type: 'Success',
+  });
 
-    const showAlert = (type: 'Error' | 'Success' | 'Signed Out', message: string) => {
-        setAlert({ visible: true, message: message, type: type, onClose: hideAlert });
-        // Auto-hide the alert after 3 seconds
-        setTimeout(hideAlert, 3000);
-    };
-    // --- 1. FETCH USER'S LISTINGS ---
-    const fetchUserBooks = async () => {
-        if (!user) {
-            setLoading(false);
-            return;
-        }
-        try {
-            const booksRef = collection(db, "books");
-            const q = query(booksRef, where("sellerUid", "==", user.uid));
-            
-            const querySnapshot = await getDocs(q);
-            const booksArray = querySnapshot.docs.map(d => ({
-                id: d.id,
-                ...d.data(),
-            } as Book));
-            
-            setUserBooks(booksArray);
-        } catch (e) {
-            console.error("Error fetching user documents: ", e);
-            Alert.alert("Error", "Failed to load your listings.");
-             showAlert("Error", "Failed to load your listings.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const user = auth.currentUser;
 
-    useEffect(() => {
-        fetchUserBooks();
-    }, [user?.uid]);
+  const showAlert = (type: any, message: string) => {
+    setAlert({ visible: true, message, type });
+    setTimeout(() => setAlert((p) => ({ ...p, visible: false })), 2500);
+  };
 
-    // --- 2. DELETE LOGIC (DIRECT DELETION) ---
-    const deleteBook = async (bookId: string) => { 
-        console.log(`Attempting to delete book with ID: ${bookId}`);
-        try {
-            await deleteDoc(doc(db, "books", bookId));
-            setUserBooks(prev => prev.filter(book => book.id !== bookId));
-            Alert.alert("Success", "Book deleted successfully!");
-            showAlert("Success", "Book deleted successfully!"); 
-        } catch (e) {
-            console.error("Error deleting book: ", e);
-            Alert.alert("Error", "Failed to delete book. Try again.");
-            showAlert("Error", "Failed to delete book. Try again.");
-        }
-    };
-
-    // --- SIGN OUT LOGIC ---
-    const handleSignOut = async () => {
-        try {
-            await signOut(auth);
-            showAlert('Signed Out', 'You have been successfully signed out.');
-           setTimeout(() => {
-            router.replace('/'); 
-        }, 600);
-        } catch (error) {
-            console.error('Sign out error:', error);
-            Alert.alert('Error', 'Failed to sign out. Please try again.');
-            showAlert('Error', 'Failed to sign out. Please try again.');
-            
-        }
-    };
-
-    // --- LOADING AND EMPTY STATES ---
-    if (loading) {
-        return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
-        );
+  const fetchUserBooks = async () => {
+    if (!user) return;
+    try {
+      const q = query(collection(db, 'books'), where('sellerUid', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const booksArray = querySnapshot.docs.map(
+        (d) => ({ id: d.id, ...d.data() } as Book)
+      );
+      setUserBooks(booksArray);
+    } catch (e) {
+      showAlert('Error', 'Failed to load your listings.');
+    } finally {
+      setLoading(false);
     }
-    
-    const renderBookItem = ({ item }: { item: Book }) => (
-        // The entire card container is not a TouchableOpacity to prevent accidental navigation
-        <View style={styles.bookItemContainer}>
-   
-            <TouchableOpacity 
-                style={styles.bookInfo} 
-                onPress={() => router.push(`/book/${item.id}`)} 
-                activeOpacity={0.7}
-            >
-                <Image
-                    source={{ uri: item.imageUrl || item.image || "https://th.bing.com/th/id/R.29b132aefa114eaa5d24ef8862d2f97d?rik=TISW01nJElDcsQ&riu=http%3a%2f%2fclipart-library.com%2fimages%2f8cEb8geni.jpg&ehk=rWHIunB4f3%2bXVNQLkWDex2EeFZJugkVcRyGKV4mzeBY%3d&risl=&pid=ImgRaw&r=0" }}
-                    style={styles.bookImage}
-                />
-                <View style={styles.textDetails}>
-                    <Text style={styles.bookTitle} numberOfLines={1}>{item.Title}</Text>
-                    <Text style={styles.bookPrice}>
-                        {item.price === 'Free' ? <Text style={styles.freePriceText}>FREE</Text> : `₹${item.price}`}
-                    </Text>
-                </View>
-            </TouchableOpacity>
+  };
 
-            <View style={styles.actionRow}>
-                <TouchableOpacity 
-                    style={[styles.actionButton, styles.editButton]} 
-                    onPress={(e) => { 
-                        // e.stopPropagation(); // Uncomment if Edit has propagation issues
-                        router.push(`/edit-book/${item.id}`);
-                    }} 
-                >
-                    <Text style={styles.actionText}>Edit</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                    style={[styles.actionButton, styles.deleteButton]} 
-                    onPress={(e) => { 
-                        e.stopPropagation(); 
-                        deleteBook(item.id); // Direct deletion
-                    }} 
-                >
-                    <Text style={styles.deleteText}>Delete</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+  useEffect(() => {
+    fetchUserBooks();
+  }, [user?.uid]);
 
-    const emptyState = (
-        <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>You haven't listed any books yet.</Text>
-        </View>
-    );
+  const deleteBook = async (bookId: string) => {
+    try {
+      await deleteDoc(doc(db, 'books', bookId));
+      setUserBooks((prev) => prev.filter((b) => b.id !== bookId));
+      showAlert('Success', 'Book deleted successfully!');
+    } catch {
+      showAlert('Error', 'Failed to delete book.');
+    }
+  };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      showAlert('Signed Out', 'You have been signed out.');
+      setTimeout(() => router.replace('/'), 600);
+    } catch {
+      showAlert('Error', 'Sign-out failed.');
+    }
+  };
+
+  if (loading)
     return (
-        <>
-           
-            <CustomAlertBanner
-                visible={alert.visible}
-                message={alert.message}
-                type={alert.type}
-                onClose={alert.onClose}
-            />
-        <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>{user?.displayName || 'User'}</Text>
-                <Text style={styles.userInfoText}>
-                    Signed in as: { user?.email || 'User'}
-                </Text>
-            </View>
-
-            <Text style={styles.listingsHeader}>Your Active Listings ({userBooks.length})</Text>
-
-            {userBooks.length === 0 ? (
-                emptyState
-            ) : (
-                <FlatList
-                    data={userBooks}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderBookItem}
-                    contentContainerStyle={styles.listContent}
-                />
-            )}
-
-            {/* Sign Out Button */}
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-                <Text style={styles.signOutButtonText}>Sign Out</Text>
-            </TouchableOpacity>
-        </View>
-        </>
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
     );
+
+  const renderBookItem = ({ item }: { item: Book }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.bookRow}
+        onPress={() => router.push(`/book/${item.id}`)}
+      >
+        <Image
+          source={{
+            uri:
+              item.imageUrl ||
+              item.image||
+              "https://th.bing.com/th/id/R.29b132aefa114eaa5d24ef8862d2f97d?rik=TISW01nJElDcsQ&riu=http%3a%2f%2fclipart-library.com%2fimages%2f8cEb8geni.jpg&ehk=rWHIunB4f3%2bXVNQLkWDex2EeFZJugkVcRyGKV4mzeBY%3d&risl=&pid=ImgRaw&r=0",
+          }}
+          style={styles.bookImage}
+        />
+        <View style={styles.bookDetails}>
+          <Text style={styles.bookTitle}>{item.Title}</Text>
+          <Text style={styles.bookPrice}>
+            {item.price === 'Free' ? (
+              <Text style={styles.freeText}>FREE</Text>
+            ) : (
+              `₹${item.price}`
+            )}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.actionContainer}>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: Colors.warning }]}
+          onPress={() => router.push(`/edit-book/${item.id}`)}
+        >
+          <Text style={styles.actionText}>Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: Colors.danger }]}
+          onPress={() => deleteBook(item.id)}
+        >
+          <Text style={[styles.actionText, { color: '#fff' }]}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <>
+      <CustomAlertBanner
+        visible={alert.visible}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert((p) => ({ ...p, visible: false }))}
+      />
+
+      <View style={styles.container}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {user?.displayName?.charAt(0)?.toUpperCase() || 'U'}
+            </Text>
+          </View>
+          <Text style={styles.username}>{user?.displayName || 'User'}</Text>
+          <Text style={styles.email}>{user?.email}</Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>
+          Your Listings ({userBooks.length})
+        </Text>
+
+        {userBooks.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No books listed yet 📚</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={userBooks}
+            keyExtractor={(item) => item.id}
+            renderItem={renderBookItem}
+            contentContainerStyle={styles.list}
+          />
+        )}
+
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
 }
 
-// --- STYLESHEET ---
-const customAlertStyles = StyleSheet.create({
-    banner: {
-        padding: 15,
-        borderRadius: 8,
-        marginHorizontal: 10,
-        marginTop: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'absolute',
-        top: 0, 
-        left: 0,
-        right: 0,
-        zIndex: 100, // Ensure it is above everything
-    },
-    text: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        flexShrink: 1,
-    },
-    closeButton: {
-        padding: 5,
-    },
-    closeText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
+// --- STYLES ---
+const alertStyles = StyleSheet.create({
+  banner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    padding: 12,
+    margin: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 100,
+  },
+  text: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  closeText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
 });
 
 const styles = StyleSheet.create({
+
     container: {
         marginTop: 20,
         flex: 1,
@@ -416,7 +440,80 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
     },
+
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    padding: 20,
+  },
+  center: { justifyContent: 'center', alignItems: 'center' },
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: Colors.card,
+    paddingVertical: 25,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  avatarText: { color: '#fff', fontSize: 28, fontWeight: '700' },
+  username: { fontSize: 22, fontWeight: '700', color: Colors.textDark },
+  email: { fontSize: 14, color: Colors.textMuted, marginTop: 4 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginVertical: 10,
+    color: Colors.textDark,
+  },
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 15,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  bookRow: { flexDirection: 'row', alignItems: 'center' },
+  bookImage: { width: 80, height: 80, borderRadius: 10, marginRight: 15 },
+  bookDetails: { flex: 1 },
+  bookTitle: { fontSize: 16, fontWeight: '600', color: Colors.textDark },
+  bookPrice: { fontSize: 15, fontWeight: '700', color: Colors.success, marginTop: 4 },
+  freeText: { color: Colors.primary },
+  actionContainer: { flexDirection: 'row', marginTop: 12, justifyContent: 'flex-end' },
+  actionButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  actionText: { fontWeight: '600', color: Colors.textDark },
+  emptyState: { alignItems: 'center', paddingVertical: 40 },
+  emptyText: { color: Colors.textMuted, fontSize: 16 },
+  list: { paddingBottom: 80 },
+  signOutButton: {
+    backgroundColor: Colors.danger,
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  signOutText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
 });
+
 
 // import { useRouter } from 'expo-router';
 // import { getAuth, signOut } from 'firebase/auth';
