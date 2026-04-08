@@ -48,7 +48,6 @@ const CustomAlertBanner: React.FC<CustomAlertProps> = ({ visible, message, type,
         icon = '✅';
     } else { // Handle 'Signed Out' or default
         backgroundColor = Colors.primary;
-        icon = '👋';
     }
 return (
         <View style={[customAlertStyles.banner, { backgroundColor }]}>
@@ -269,6 +268,7 @@ const customAlertStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
     container: {
+        marginTop: 20,
         flex: 1,
         backgroundColor: Colors.background,
         padding: 20,
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bookImage: {
-        width: 100,
-        height: 100,
+        width: 90,
+        height: 90,
         borderRadius: 8,
         marginRight: 15,
         resizeMode: 'cover',
@@ -337,12 +337,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     bookTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '600',
         color: Colors.textDark,
     },
     bookPrice: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         color: Colors.success,
         marginTop: 4,
@@ -352,28 +352,29 @@ const styles = StyleSheet.create({
     },
     // --- Action Button Styles ---
     actionRow: {
-        
+        width:200,
         flexDirection: 'row',
-        alignItems: 'stretch',
+        alignItems: 'center',
+        justifyContent: 'space-around', 
         borderLeftWidth: 1,
         borderLeftColor: Colors.border,
-        paddingVertical: 8,
+        paddingVertical: 2,
     },
     actionButton: {
         paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 5,
         alignItems: 'center',
-        justifyContent: 'center',
-        margin:25,
+        justifyContent: 'space-around',
+        width:70,
+        marginVertical:0,
     },
     editButton: {
         backgroundColor: Colors.warning,
-        borderRadius: 12,
+        borderRadius: 8,
         
     },
     deleteButton: {
-        
-        borderRadius: 12,
+        borderRadius: 8,
         backgroundColor: Colors.danger,
     },
     actionText: {
@@ -382,7 +383,7 @@ const styles = StyleSheet.create({
         color: Colors.textDark, // Should be dark on yellow
         fontWeight: '600',
         fontSize: 14,
-        margin:10,
+        width:500,
     },
     deleteText: {
         
@@ -391,7 +392,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
     },
-    // --- Empty State ---
     emptyContainer: {
         alignItems: 'center',
         justifyContent: 'center',

@@ -250,6 +250,7 @@ const customAlertStyles = StyleSheet.create({
 });
 const styles = StyleSheet.create({
   container: {
+    marginTop: 25,
     padding: 20,
     backgroundColor: "#f9f9f9",
     flexGrow: 1,
