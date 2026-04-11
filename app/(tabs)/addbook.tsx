@@ -364,7 +364,7 @@
 // });
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ActivityIndicator } from "react-native";
 import { db } from "../../firebaseConfig";
@@ -475,10 +475,10 @@ export default function AddBook() {
       showAlert('Error', 'Please enter a price or mark as Free.'); 
       return;
     }
-    if (!image) {
-      showAlert('Error', 'Please upload an image of the book.');
-      return;
-    }
+    // if (!image) {
+    //   showAlert('Error', 'Please upload an image of the book.');
+    //   return;
+    // }
 
     setIsSubmitting(true);
     const user = auth.currentUser;
@@ -496,6 +496,8 @@ export default function AddBook() {
         description,
         Student_Name: studentName,
         sellerUid,
+        status: 'pending', // <--- This ensures it's not live immediately
+      createdAt: serverTimestamp(), // Good for sorting
       });
 
       showAlert("Success", "Book added successfully!");

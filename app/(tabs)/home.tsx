@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { FlatList, Image, Linking, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebaseConfig";
@@ -26,7 +26,11 @@ export default function BookList() {
  useEffect(() => {
  const fetchBooks = async () => {
  try {
- const querySnapshot = await getDocs(collection(db, "books"));
+// const querySnapshot = await getDocs(collection(db, "books"));
+ // Create a query that only looks for "approved" books
+const q = query(collection(db, "books"), where("status", "==", "approved"));
+// Use the query 'q' instead of the collection reference
+const querySnapshot = await getDocs(q);
  const booksArray = querySnapshot.docs.map(doc => {
  const data = doc.data();
  return {
