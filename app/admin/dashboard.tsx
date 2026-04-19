@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+
 import {
   collection,
   deleteDoc,
@@ -14,6 +15,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -72,25 +74,68 @@ export default function AdminDashboard() {
       Alert.alert("Error", "Failed to approve.");
     }
   };
+const handleReject = (id: string) => {
+  console.log("Reject button clicked for ID:", id); // Check your terminal/console!
 
-  const handleReject = async (id: string) => {
+  const title = "Reject & Delete";
+  const message = "Are you sure you want to delete this listing permanently?";
+
+  if (Platform.OS === 'web') {
+    // Standard browser confirmation for Web testing
+    const confirmed = window.confirm(`${title}\n\n${message}`);
+    if (confirmed) {
+      confirmDelete(id);
+    }
+  } else {
+    // Native Alert for iOS/Android
     Alert.alert(
-      "Delete Request",
-      "Are you sure you want to reject and delete this listing?",
+      title,
+      message,
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await deleteDoc(doc(db, "books", id));
-            fetchPendingBooks();
-          },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => confirmDelete(id) 
         },
-      ],
+      ]
     );
-  };
+  }
+};
 
+// Move the async logic here so the Alert doesn't have to wait for it
+const confirmDelete = async (id: string) => {
+  try {
+    setLoading(true);
+    await deleteDoc(doc(db, "books", id));
+    Alert.alert("Success", "Listing deleted.");
+    fetchPendingBooks();
+  } catch (e) {
+    console.error("Delete error:", e);
+    if (Platform.OS === 'web') alert("Delete failed. Check console.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // const handleReject = async (id: string) => {
+  //   Alert.alert(
+  //     "Delete Request",
+  //     "Are you sure you want to reject and delete this listing?",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       {
+  //         text: "Delete",
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           await deleteDoc(doc(db, "books", id));
+  //           fetchPendingBooks();
+  //         },
+  //       },
+  //     ],
+  //   );
+  // };
+ 
   if (loading)
     return (
       <ActivityIndicator
